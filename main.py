@@ -1,5 +1,6 @@
 from machine import Pin, ADC
 from time import sleep
+import esp32
 import onewire
 import ds18x20
 # from datetime import date
@@ -86,12 +87,6 @@ class LM35(Sensor):
             old = self.reading
             self.raw()
             self.total = old + self.total
-            #print(self.raw())
-            #print(self.reading)
-            #print(old)
-            #print(self.total)
-            #print(i)
-        #print(self.total)
         self.celsius_temp = self.temp_c(self.total/self.schedule - 1)
         
         return self.celsius_temp
@@ -100,12 +95,9 @@ class LM35(Sensor):
         return (self.read() * (9 / 5)) + 32
 
 
-# while
 sensor_digital = DS18B20(26)
 print(f'DS18B20: {sensor_digital.read()} graus.')
 sensor_analogico = LM35(32)
-print(f'LM35: {sensor_analogico.read()} graus.')
+print(f'LM35: {sensor_analogico.raw()} graus.')
 print(sensor_digital.store_data(5, 1))
 print(sensor_analogico.store_data(5, 1))
-
-
