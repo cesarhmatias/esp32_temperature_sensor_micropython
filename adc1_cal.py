@@ -28,7 +28,7 @@
 # A good glimpse is provided in [4]. 
 # 
 # - "Per design the ADC reference voltage is 1100 mV, however the true
-#   reference voltage can range from 1000 mV to 1200 mV amongst different
+#   reference voltage  can range from 1000 mV to 1200 mV amongst different
 #   ESP32s." [1]
 #
 # - Attenuation and "suggested input ranges" [1]
@@ -324,48 +324,25 @@ class ADC1Cal(machine.ADC):
         return ("{} width: {:2}, attenuation: {:>5}, raw value: {:4}, value: {}"
                 .format(name_str, 9+self._width, _atten[self._atten], raw_val, self.voltage))
 
-
 from time import sleep
 from machine import Pin
 
 if __name__ == "__main__":
-    ADC_PIN   = 35                # ADC input pin no.
-    VREF      = 1065              # V_ref in mV (device specific value -> espefuse.py --port <port> adc_info)
-#    DIV       = 100 / (100 + 200) # (R1 / R1 + R2) -> V_meas = V(R1 + R2); V_adc = V(R1)  
-    DIV       = 1
-    AVERAGING = 10                # no. of samples for averaging
+    from machine import Pin
     
-    adc_widths = [ADC.WIDTH_9BIT, ADC.WIDTH_10BIT, ADC.WIDTH_11BIT, ADC.WIDTH_12BIT]
-    adc_atten  = [ADC.ATTN_0DB, ADC.ATTN_2_5DB, ADC.ATTN_6DB, ADC.ATTN_11DB]
-
-    # Using programmer-supplied calibration value
-    #ubatt = ADC1Cal(Pin(ADC_PIN, Pin.IN), DIV, VREF, AVERAGING, "ADC1 User Calibrated")
-
-    # Using efuse calibration value
-    ubatt = ADC1Cal(Pin(ADC_PIN, Pin.IN), DIV, None, AVERAGING, "ADC1 eFuse Calibrated")
-
-    # Test all supported attenuation/width permutations
-    for attenuation in adc_atten:
-        # set attenuation
-        ubatt.atten(attenuation)
-
-        for width in adc_widths:
-            # set ADC result width
-            ubatt.width(width)
-       
-            # Print object info
-            print(ubatt)
+    ADC_PIN   = 32                # ADC input pin no.
+    DIV       = 1.12                # div = V_measured / V_input; here: no input divider
+    AVERAGING = 1000               # no. of samples for averaging (default: 10)
+    
+    # vref = None -> V_ref calibration value is read from efuse
+    ubatt = ADC1Cal(Pin(ADC_PIN, Pin.IN), DIV, 1090, AVERAGING, "ADC1 Calibrated")
     
     # set ADC result width
-    ubatt.width(ADC.WIDTH_10BIT)
-    
+    #ubatt.width(1)
+
     # set attenuation
-    ubatt.atten(ADC.ATTN_6DB)
-    
-    print()
+    ubatt.atten(ADC.ATTN_0DB)
+
     print('ADC Vref: {:4}mV'.format(ubatt.vref))
-    print()
-    
-    while 1:
-        print('Voltage:  {:4.1f}mV'.format(ubatt.voltage))
-        sleep(5)
+
+    print('Voltage:  {:4.1f}mV'.format(ubatt.voltage))
